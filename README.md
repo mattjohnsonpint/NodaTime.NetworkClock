@@ -25,7 +25,8 @@ Instant now = clock.Now;
 DateTimeZone tz = DateTimeZoneProviders.Tzdb["America/New_York"];
 ZonedDateTime zdt = now.InZone(tz);
 
-// Of course, you can convert this to whatever format makes sense in your application, using any of the following
+// Of course, you can convert this to whatever format makes sense in your application.
+// You can use any of the following:
 LocalDateTime ldt = zdt.LocalDateTime;
 OffsetDateTime odt = zdt.ToOffsetDateTime();
 DateTimeOffset dto = zdt.ToDateTimeOffset();
