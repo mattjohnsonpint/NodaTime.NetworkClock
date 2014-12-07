@@ -37,10 +37,10 @@ namespace NodaTime
         {
             get
             {
-                var elapsed = _stopwatch.Elapsed;
-                if (_stopwatch.IsRunning && elapsed < CacheTimeout.ToTimeSpan())
+                var elapsed = Duration.FromTimeSpan(_stopwatch.Elapsed);
+                if (_stopwatch.IsRunning && elapsed < CacheTimeout)
                 {
-                    return _time + Duration.FromTimeSpan(elapsed);
+                    return _time + elapsed;
                 }
 
                 _time = GetNetworkTime();
