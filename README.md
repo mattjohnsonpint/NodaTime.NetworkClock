@@ -32,3 +32,5 @@ OffsetDateTime odt = zdt.ToOffsetDateTime();
 DateTimeOffset dto = zdt.ToDateTimeOffset();
 DateTime dt = zdt.ToDateTimeUnspecified();
 ```
+
+Note that technically, the implementation is currently just "SNTP", as it doesn't account for the delay in retrieving the time, and it only makes a single query to the server.   I will probably update it to a full NTP client at some point.  (PR's are welcome!)
