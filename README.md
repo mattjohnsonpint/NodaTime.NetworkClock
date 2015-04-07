@@ -18,10 +18,10 @@ var clock = NetworkClock.Instance;
 clock.NtpServer = "pool.ntp.org";              // which server to contact
 clock.CacheTimeout = Duration.FromMinutes(15); // how long between calls to the server
 
-// Call .Now to get the current time
+// Call .Now to get the current time as an Instant
 Instant now = clock.Now;
 
-// Like any clock, you can then convert to the local time zone
+// Like any Instant, you can then convert to a time zone
 DateTimeZone tz = DateTimeZoneProviders.Tzdb["America/New_York"];
 ZonedDateTime zdt = now.InZone(tz);
 
