@@ -34,10 +34,11 @@
         <h1>
 <a id="nodatimenetworkclock" class="anchor" href="#nodatimenetworkclock" aria-hidden="true"><span class="octicon octicon-link"></span></a>NodaTime.NetworkClock</h1>
 
+<p><a href="https://gitter.im/mj1856/NodaTime.NetworkClock?utm_source=badge&amp;utm_medium=badge&amp;utm_campaign=pr-badge&amp;utm_content=badge"><img src="https://badges.gitter.im/Join%20Chat.svg" alt="Join the chat at https://gitter.im/mj1856/NodaTime.NetworkClock"></a></p>
+
 <p>A <code>NodaTime.IClock</code> implementation that gets the current time from an NTP server instead of the computer's local clock.</p>
 
-<pre><code>PM&gt; Install-Package NodaTime.NetworkClock
-</code></pre>
+<div class="highlight highlight-powershell"><pre>PM<span class="pl-k">&gt;</span> <span class="pl-c1">Install-Package</span> NodaTime.NetworkClock</pre></div>
 
 <p>Example Usage:</p>
 
@@ -46,14 +47,14 @@
 
 <span class="pl-c">// Optionally, you can adjust some settings.</span>
 <span class="pl-c">// These are the defaults, and can be omited if you aren't going to change them.</span>
-clock.NtpServer = <span class="pl-s1"><span class="pl-pds">"</span>pool.ntp.org<span class="pl-pds">"</span></span>;              <span class="pl-c">// which server to contact</span>
+clock.NtpServer = <span class="pl-s"><span class="pl-pds">"</span>pool.ntp.org<span class="pl-pds">"</span></span>;              <span class="pl-c">// which server to contact</span>
 clock.CacheTimeout = Duration.FromMinutes(<span class="pl-c1">15</span>); <span class="pl-c">// how long between calls to the server</span>
 
-<span class="pl-c">// Call .Now to get the current time</span>
+<span class="pl-c">// Call .Now to get the current time as an Instant</span>
 Instant now = clock.Now;
 
-<span class="pl-c">// Like any clock, you can then convert to the local time zone</span>
-DateTimeZone tz = DateTimeZoneProviders.Tzdb[<span class="pl-s1"><span class="pl-pds">"</span>America/New_York<span class="pl-pds">"</span></span>];
+<span class="pl-c">// Like any Instant, you can then convert to a time zone</span>
+DateTimeZone tz = DateTimeZoneProviders.Tzdb[<span class="pl-s"><span class="pl-pds">"</span>America/New_York<span class="pl-pds">"</span></span>];
 ZonedDateTime zdt = now.InZone(tz);
 
 <span class="pl-c">// Of course, you can convert this to whatever format makes sense in your application.</span>
@@ -71,7 +72,7 @@ DateTime dt = zdt.ToDateTimeUnspecified();</pre></div>
     <div id="footer_wrap" class="outer">
       <footer class="inner">
         <p class="copyright">Nodatime.NetworkClock maintained by <a href="https://github.com/mj1856">mj1856</a></p>
-        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
       </footer>
     </div>
 
