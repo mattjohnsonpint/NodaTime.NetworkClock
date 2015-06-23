@@ -5,7 +5,7 @@ NodaTime.NetworkClock
 
 A `NodaTime.IClock` implementation that gets the current time from an NTP server instead of the computer's local clock.
 
-```
+```powershell
 PM> Install-Package NodaTime.NetworkClock
 ```
 
