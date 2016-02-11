@@ -57,16 +57,11 @@ namespace NodaTime
             var ntpData = new byte[48];
 
             //Setting the Leap Indicator, Version Number and Mode values
-            ntpData[0] = 0x1B; //LI = 0 (no warning), VN = 3 (IPv4 only), Mode = 3 (Client Mode)
+            ntpData[0] = 0x23; // 0010 0011 : LI = 0 (no warning), VN = 4 (IPv4 or IPv6), Mode = 3 (Client Mode)
 
+            var ipEndPoint = ResolveIPEndPoint();
 
-            var addresses = Dns.GetHostEntry(NtpServer).AddressList;
-
-            //The UDP port number assigned to NTP is 123
-            var ipEndPoint = new IPEndPoint(addresses[0], 123);
-
-            //NTP uses UDP
-            var socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            var socket = new Socket(ipEndPoint.AddressFamily, SocketType.Dgram, ProtocolType.Udp);
 
             socket.Connect(ipEndPoint);
 
@@ -95,6 +90,25 @@ namespace NodaTime
             var instant = Instant.FromUtc(1900, 1, 1, 0, 0) + Duration.FromMilliseconds(milliseconds);
 
             return instant;
+        }
+
+        private IPEndPoint ResolveIPEndPoint()
+        {
+            const int NTP_PORT = 123;
+
+            var ntpServer = NtpServer;
+
+            IPAddress ipAddress;
+            if (IPAddress.TryParse(ntpServer, out ipAddress))
+            {
+                return new IPEndPoint(ipAddress, NTP_PORT);
+            }
+            else
+            {
+                // If it's not already an IPAddress, use DNS to look it up as a host name
+                var addresses = Dns.GetHostEntry(ntpServer).AddressList;
+                return new IPEndPoint(addresses[0], NTP_PORT);
+            }
         }
 
         private static uint SwapEndianness(ulong x)
