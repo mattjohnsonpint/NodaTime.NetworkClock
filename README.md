@@ -1,7 +1,5 @@
-NodaTime.NetworkClock
+NodaTime.NetworkClock  [![NuGet Version](https://img.shields.io/nuget/v/NodaTime.NetworkClock.svg?style=flat)](https://www.nuget.org/packages/NodaTime.NetworkClock/) 
 =====================
-
-[![Join the chat at https://gitter.im/mj1856/NodaTime.NetworkClock](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/mj1856/NodaTime.NetworkClock?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 A `NodaTime.IClock` implementation that gets the current time from an NTP server instead of the computer's local clock.
 
