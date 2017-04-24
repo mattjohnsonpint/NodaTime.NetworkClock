@@ -33,20 +33,17 @@ namespace NodaTime
         /// </summary>
         public Duration CacheTimeout { get; set; }
 
-        public Instant Now
+        public Instant GetCurrentInstant()
         {
-            get
+            var elapsed = Duration.FromTimeSpan(_stopwatch.Elapsed);
+            if (_stopwatch.IsRunning && elapsed < CacheTimeout)
             {
-                var elapsed = Duration.FromTimeSpan(_stopwatch.Elapsed);
-                if (_stopwatch.IsRunning && elapsed < CacheTimeout)
-                {
-                    return _time + elapsed;
-                }
-
-                _time = GetNetworkTime();
-                _stopwatch.Restart();
-                return _time;
+                return _time + elapsed;
             }
+
+            _time = GetNetworkTime();
+            _stopwatch.Restart();
+            return _time;
         }
 
         private Instant GetNetworkTime()
