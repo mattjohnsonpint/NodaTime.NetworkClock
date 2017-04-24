@@ -38,6 +38,19 @@ DateTimeOffset dto = zdt.ToDateTimeOffset();
 DateTime dt = zdt.ToDateTimeUnspecified();
 ```
 
+```csharp
+// Alternatively, you can create a ZonedClock for a specific time zone
+var tz = DateTimeZoneProviders.Tzdb["Australia/Lord_Howe"];
+var clock = new ZonedClock(NetworkClock.Instance, tz);
+
+// This makes it easy to reason about current time in a particular location
+ZonedDateTime zdt = clock.GetCurrentZonedDateTime();
+OffsetDateTime odt = clock.GetCurrentOffsetDateTime();
+LocalDateTime ldt = clock.GetCurrentLocalDateTime();
+LocalDate ld = clock.GetCurrentDate();
+LocalTime lt = clock.GetCurrentTimeOfDay();
+```
+
 ## Notes
 
 Note that technically, the implementation is currently just "SNTP", as it doesn't account for the delay in retrieving the time, and it only makes a single query to the server.   I will probably update it to a full NTP client at some point.  (PR's are welcome!)
