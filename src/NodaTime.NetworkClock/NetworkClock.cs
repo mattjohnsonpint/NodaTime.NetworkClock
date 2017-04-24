@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading.Tasks;
 
 namespace NodaTime
 {
@@ -13,6 +14,9 @@ namespace NodaTime
         private readonly Stopwatch _stopwatch = new Stopwatch();
         private Instant _time;
 
+        /// <summary>
+        /// The singleton instance of <see cref="T:NodaTime.NetworkClock" />.
+        /// </summary>
         public static readonly NetworkClock Instance = new NetworkClock();
 
         private NetworkClock()
@@ -33,44 +37,43 @@ namespace NodaTime
         /// </summary>
         public Duration CacheTimeout { get; set; }
 
-        public Instant Now
+        /// <inheritdoc />
+        public Instant GetCurrentInstant()
         {
-            get
+            var elapsed = Duration.FromTimeSpan(_stopwatch.Elapsed);
+            if (_stopwatch.IsRunning && elapsed < CacheTimeout)
             {
-                var elapsed = Duration.FromTimeSpan(_stopwatch.Elapsed);
-                if (_stopwatch.IsRunning && elapsed < CacheTimeout)
-                {
-                    return _time + elapsed;
-                }
-
-                _time = GetNetworkTime();
-                _stopwatch.Restart();
-                return _time;
+                return _time + elapsed;
             }
+
+            _time = GetNetworkTimeAsync().Result; // TODO: we shouldn't be blocking here, but rather should use a separate async thread on a timer loop, with some synchronization
+            _stopwatch.Restart();
+            return _time;
         }
 
-        private Instant GetNetworkTime()
+        private async Task<Instant> GetNetworkTimeAsync()
         {
             // http://stackoverflow.com/a/12150289
 
             // NTP message size - 16 bytes of the digest (RFC 2030)
             var ntpData = new byte[48];
-
+            
             //Setting the Leap Indicator, Version Number and Mode values
             ntpData[0] = 0x23; // 0010 0011 : LI = 0 (no warning), VN = 4 (IPv4 or IPv6), Mode = 3 (Client Mode)
 
-            var ipEndPoint = ResolveIPEndPoint();
+            var ipEndPoint = await ResolveIPEndPointAsync().ConfigureAwait(false);
 
-            var socket = new Socket(ipEndPoint.AddressFamily, SocketType.Dgram, ProtocolType.Udp);
+            using (var socket = new Socket(ipEndPoint.AddressFamily, SocketType.Dgram, ProtocolType.Udp))
+            {
+                await socket.ConnectAsync(ipEndPoint).ConfigureAwait(false);
 
-            socket.Connect(ipEndPoint);
+                //Stops code hang if NTP is blocked
+                socket.ReceiveTimeout = 3000;
 
-            //Stops code hang if NTP is blocked
-            socket.ReceiveTimeout = 3000;
-
-            socket.Send(ntpData);
-            socket.Receive(ntpData);
-            socket.Close();
+                var buffer = new ArraySegment<byte>(ntpData);
+                await socket.SendAsync(buffer, SocketFlags.None).ConfigureAwait(false);
+                await socket.ReceiveAsync(buffer, SocketFlags.None).ConfigureAwait(false);
+            }
 
             //Offset to get to the "Transmit Timestamp" field (time at which the reply 
             //departed the server for the client, in 64-bit timestamp format."
@@ -92,7 +95,7 @@ namespace NodaTime
             return instant;
         }
 
-        private IPEndPoint ResolveIPEndPoint()
+        private async Task<IPEndPoint> ResolveIPEndPointAsync()
         {
             const int NTP_PORT = 123;
 
@@ -103,12 +106,11 @@ namespace NodaTime
             {
                 return new IPEndPoint(ipAddress, NTP_PORT);
             }
-            else
-            {
-                // If it's not already an IPAddress, use DNS to look it up as a host name
-                var addresses = Dns.GetHostEntry(ntpServer).AddressList;
-                return new IPEndPoint(addresses[0], NTP_PORT);
-            }
+
+            // If it's not already an IPAddress, use DNS to look it up as a host name
+            var hostEntry = await Dns.GetHostEntryAsync(ntpServer).ConfigureAwait(false);
+            var addresses = hostEntry.AddressList;
+            return new IPEndPoint(addresses[0], NTP_PORT);
         }
 
         private static uint SwapEndianness(ulong x)
@@ -116,9 +118,9 @@ namespace NodaTime
             // http://stackoverflow.com/a/3294698
 
             return (uint)(((x & 0x000000ff) << 24) +
-                           ((x & 0x0000ff00) << 8) +
-                           ((x & 0x00ff0000) >> 8) +
-                           ((x & 0xff000000) >> 24));
+                          ((x & 0x0000ff00) << 8) +
+                          ((x & 0x00ff0000) >> 8) +
+                          ((x & 0xff000000) >> 24));
         }
     }
 }

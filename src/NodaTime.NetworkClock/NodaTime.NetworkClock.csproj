@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Lightweight library to convert quickly between Windows time zone IDs and IANA Time Zone names.</Description>
+    <Authors>Matt Johnson</Authors>
+    <TargetFramework>netstandard1.3</TargetFramework>
+    <RootNamespace>NodaTime</RootNamespace>
+    <PackageId>NodaTime.NetworkClock</PackageId>
+    <PackageTags>nodatime;noda time;ntp;network time protocol;clock;time</PackageTags>
+    <PackageProjectUrl>https://github.com/mj1856/NodaTime.NetworkClock</PackageProjectUrl>
+    <PackageLicenseUrl>https://raw.githubusercontent.com/mj1856/NodaTime.NetworkClock/master/LICENSE.txt</PackageLicenseUrl>
+    <IncludeSource>True</IncludeSource>
+    <IncludeSymbols>True</IncludeSymbols>
+    <Version>2.0.0</Version>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <DocumentationFile>bin\$(Configuration)\netstandard1.3\NodaTime.NetworkClock.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NodaTime" Version="2.0.0" />
+    <PackageReference Include="System.Net.NameResolution" Version="4.3.0" />
+  </ItemGroup>
+
+</Project>

@@ -2,19 +2,19 @@
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Threading;
+using System.Threading.Tasks;
 using NodaTime;
 using Xunit;
 
-namespace UnitTests
+namespace NetworkClockTests
 {
     public class Tests
     {
         [Fact]
         public void Can_Get_Network_Time()
         {
-            var networkNow = NetworkClock.Instance.Now;
-            var systemNow = SystemClock.Instance.Now;
+            var networkNow = NetworkClock.Instance.GetCurrentInstant();
+            var systemNow = SystemClock.Instance.GetCurrentInstant();
             var deltaSeconds = (systemNow - networkNow).ToTimeSpan().TotalSeconds;
 
             Debug.WriteLine(networkNow);
@@ -24,14 +24,14 @@ namespace UnitTests
         }
 
         [Fact]
-        public void Can_Get_Network_Time_Twice_Within_Cache_Period()
+        public async Task Can_Get_Network_Time_Twice_Within_Cache_Period()
         {
-            var first = NetworkClock.Instance.Now;
+            var first = NetworkClock.Instance.GetCurrentInstant();
             Debug.WriteLine(first);
 
-            Thread.Sleep(2000);
+            await Task.Delay(2000);
 
-            var second = NetworkClock.Instance.Now;
+            var second = NetworkClock.Instance.GetCurrentInstant();
             Debug.WriteLine(second);
 
             var deltaMillis = (second - first).ToTimeSpan().TotalMilliseconds;
@@ -44,12 +44,13 @@ namespace UnitTests
         const string NIST_TIME_SERVER = "time.nist.gov";
 
         [Fact]
-        public void Can_Get_Network_Time_From_IPv4_Addresses()
+        public async Task Can_Get_Network_Time_From_IPv4_Addresses()
         {
-            var ipv4Address = Dns.GetHostEntry(NIST_TIME_SERVER).AddressList.First(a => a.AddressFamily == AddressFamily.InterNetwork);
+            var hostEntry = await Dns.GetHostEntryAsync(NIST_TIME_SERVER);
+            var ipv4Address = hostEntry.AddressList.First(a => a.AddressFamily == AddressFamily.InterNetwork);
 
             var networkNow = QueryTimeWithServer(ipv4Address.ToString());
-            var systemNow = SystemClock.Instance.Now;
+            var systemNow = SystemClock.Instance.GetCurrentInstant();
             var deltaSeconds = (systemNow - networkNow).ToTimeSpan().TotalSeconds;
 
             Debug.WriteLine(networkNow);
@@ -59,12 +60,13 @@ namespace UnitTests
         }
 
         [Fact]
-        public void Can_Get_Network_Time_From_IPv6_Addresses()
+        public async Task Can_Get_Network_Time_From_IPv6_Addresses()
         {
-            var ipv6Address = Dns.GetHostEntry(NIST_TIME_SERVER).AddressList.First(a => a.AddressFamily == AddressFamily.InterNetworkV6);
+            var hostEntry = await Dns.GetHostEntryAsync(NIST_TIME_SERVER);
+            var ipv6Address = hostEntry.AddressList.First(a => a.AddressFamily == AddressFamily.InterNetworkV6);
 
             var networkNow = QueryTimeWithServer("[" + ipv6Address + "]");
-            var systemNow = SystemClock.Instance.Now;
+            var systemNow = SystemClock.Instance.GetCurrentInstant();
             var deltaSeconds = (systemNow - networkNow).ToTimeSpan().TotalSeconds;
 
             Debug.WriteLine(networkNow);
@@ -79,7 +81,7 @@ namespace UnitTests
             try
             {
                 NetworkClock.Instance.NtpServer = ntpServer;
-                return NetworkClock.Instance.Now;
+                return NetworkClock.Instance.GetCurrentInstant();
             }
             finally
             {
